@@ -1,5 +1,6 @@
 package duke.task;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 /**
@@ -61,5 +62,8 @@ public abstract class Task {
     }
     public void setType(Types type) {
         this.type = type;
+    }
+    public Types getType() {
+        return this.type;
     }
 }

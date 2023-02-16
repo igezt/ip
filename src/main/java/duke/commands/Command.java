@@ -3,6 +3,7 @@ import duke.database.Database;
 import duke.exception.DukeException;
 import duke.tasklist.TaskList;
 import duke.ui.Ui;
+import duke.undolist.UndoList;
 
 /**
  * Represents the abstract Command to be inherited from by all Commands.
@@ -26,9 +27,12 @@ public abstract class Command {
      * @param taskList taskList of Duke.
      * @param ui user interface object of Duke.
      * @param database database of Duke.
+     * @param undoList list of inverse commands that can be run to undo an action.
+     * @param hasUndo if true, will generate an inverse command to undo that specific command if an inverse command
+     *                exists.
      * @throws DukeException throws a Duke related exception depending on the command generated.
      */
-    public abstract void execute(TaskList taskList, Ui ui, Database database) throws DukeException;
+    public abstract void execute(TaskList taskList, Ui ui, Database database, UndoList undoList, boolean hasUndo) throws DukeException;
 
     public boolean isActive() {
         return isActive;

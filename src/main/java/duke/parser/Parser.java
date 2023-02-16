@@ -11,11 +11,14 @@ import duke.commands.DeleteCommand;
 import duke.commands.FindCommand;
 import duke.commands.ListCommand;
 import duke.commands.MarkCommand;
+import duke.commands.UndoCommand;
 import duke.commands.UnmarkCommand;
 import duke.exception.TaskNumberNotFoundException;
 import duke.exception.blankfieldexceptions.BlankFieldDeadlineException;
 import duke.exception.blankfieldexceptions.BlankFieldEventException;
 import duke.exception.blankfieldexceptions.BlankFieldTodoException;
+import duke.exception.includeexceptions.IncludeByException;
+import duke.exception.includeexceptions.IncludeToAndFromException;
 import duke.exception.parserexceptions.NoCommandBodyException;
 import duke.exception.parserexceptions.UnknownCommandError;
 
@@ -41,11 +44,13 @@ public class Parser {
      * @throws UnknownCommandError thrown when the command's keyword does not match any of the ones known.
      */
     public Command parse(String command, int lengthOfList) throws TaskNumberNotFoundException, BlankFieldTodoException,
-            BlankFieldDeadlineException, BlankFieldEventException, UnknownCommandError, NoCommandBodyException {
+            BlankFieldDeadlineException, BlankFieldEventException, UnknownCommandError, NoCommandBodyException, IncludeToAndFromException, IncludeByException {
         if (Objects.equals(command, "list")) {
             return new ListCommand();
         } else if (Objects.equals(command, "bye")) {
             return new ByeCommand();
+        } else if (Objects.equals(command, "undo")) {
+            return new UndoCommand();
         }
 
 
@@ -79,7 +84,6 @@ public class Parser {
 
         case "find":
             return parseFindCommand(commandBody);
-
         default:
             throw new UnknownCommandError();
         }
@@ -101,14 +105,15 @@ public class Parser {
         }
     }
 
-    private AddEventCommand parseAddEventCommand(String commandBody) throws BlankFieldEventException {
+    private AddEventCommand parseAddEventCommand(String commandBody) throws BlankFieldEventException,
+            IncludeToAndFromException {
         if (commandBody.trim().isEmpty()) {
             throw new BlankFieldEventException();
         }
         return new AddEventCommand(commandBody);
     }
 
-    private AddDeadlineCommand parseAddDeadlineCommand(String commandBody) throws BlankFieldDeadlineException {
+    private AddDeadlineCommand parseAddDeadlineCommand(String commandBody) throws BlankFieldDeadlineException, IncludeByException {
         if (commandBody.trim().isEmpty()) {
             throw new BlankFieldDeadlineException();
         }

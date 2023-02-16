@@ -10,6 +10,7 @@ import duke.exception.includeexceptions.IncludeByException;
 import duke.task.Deadline;
 import duke.tasklist.TaskList;
 import duke.ui.Ui;
+import duke.undolist.UndoList;
 
 
 /**
@@ -17,35 +18,17 @@ import duke.ui.Ui;
  */
 public class AddDeadlineCommand extends Command {
 
-    private final String commandBody;
+    private final Deadline deadline;
 
     /**
      * Represents a command to add a deadline task to the TaskList.
      *
      * @param commandBody Parameters of the command, pre-parsed.
      */
-    public AddDeadlineCommand(String commandBody) {
+    public AddDeadlineCommand(String commandBody) throws IncludeByException, BlankFieldDeadlineException {
         super();
-        this.commandBody = commandBody;
-    }
-
-    /**
-     * Executes the generated AddDeadlineCommand by adding a new Deadline task into the TaskList and gives a response
-     * to the Ui.
-     *
-     * @param taskList taskList of Duke.
-     * @param ui user interface object of Duke.
-     * @param database database of Duke.
-     * @throws IncludeByException /by was not included in the command.
-     * @throws BlankFieldDeadlineException No task and/or date was included in the command.
-     * @throws InvalidDateException Date given in the command is invalid.
-     */
-    @Override
-    public void execute(TaskList taskList, Ui ui, Database database) throws IncludeByException,
-            BlankFieldDeadlineException, InvalidDateException {
-        assert this.isActive();
         // Extract deadline date and duke.task item.
-        String[] lines = this.commandBody.split(" ");
+        String[] lines = commandBody.split(" ");
         boolean hasByKeyword = false;
         StringBuilder task = new StringBuilder();
         StringBuilder deadline = new StringBuilder();
@@ -65,16 +48,41 @@ public class AddDeadlineCommand extends Command {
         if (task.toString().trim().isEmpty() || deadline.toString().trim().isEmpty()) {
             throw new BlankFieldDeadlineException();
         }
+        this.deadline = new Deadline(task.toString(), deadline.toString().stripLeading());
+    }
 
+    public AddDeadlineCommand(Deadline deletedTask) {
+        this.deadline = deletedTask;
+    }
+
+    /**
+     * Executes the generated AddDeadlineCommand by adding a new Deadline task into the TaskList and gives a response
+     * to the Ui.
+     *
+     * @param taskList taskList of Duke.
+     * @param ui user interface object of Duke.
+     * @param database database of Duke.
+     * @param undoList list of inverse commands that can be run to undo an action.
+     * @param hasUndo if true, will generate an inverse command to undo that specific command if an inverse command
+     *                exists.
+     * @throws IncludeByException /by was not included in the command.
+     * @throws BlankFieldDeadlineException No task and/or date was included in the command.
+     * @throws InvalidDateException Date given in the command is invalid.
+     */
+    @Override
+    public void execute(TaskList taskList, Ui ui, Database database, UndoList undoList, boolean hasUndo) throws IncludeByException,
+            BlankFieldDeadlineException, InvalidDateException {
+        assert this.isActive();
         try {
-            System.out.println(deadline.toString().stripLeading());
-            Deadline newDeadline = new Deadline(task.toString(), deadline.toString().stripLeading());
-            taskList.addTask(newDeadline);
+            taskList.addTask(this.deadline);
             ui.response(FRAME + "\n"
                     + "Got it. I've added this task:" + "\n"
-                    + newDeadline.getStatus() + "\n"
+                    + this.deadline.getStatus() + "\n"
                     + "Now you have " + taskList.length() + " tasks in the list" + "\n"
                     + FRAME);
+            if (hasUndo) {
+                undoList.add(new DeleteCommand(taskList.length()));
+            }
         } catch (DateTimeParseException e) {
             throw new InvalidDateException();
         }

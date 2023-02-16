@@ -6,6 +6,7 @@ import duke.exception.DukeException;
 import duke.parser.Parser;
 import duke.tasklist.TaskList;
 import duke.ui.Ui;
+import duke.undolist.UndoList;
 import javafx.application.Platform;
 
 /**
@@ -19,6 +20,7 @@ public class Duke {
     private Ui ui;
     private boolean isActive;
     private final Parser parser;
+    private final UndoList undoList;
 
 
     /**
@@ -31,6 +33,7 @@ public class Duke {
         this.database = new Database(filePath);
         this.isActive = true;
         this.parser = new Parser();
+        this.undoList = new UndoList();
         try {
             tasks = new TaskList(database.load());
         } catch (DukeException e) {
@@ -45,7 +48,7 @@ public class Duke {
     public void runCommand(String command) {
         try {
             Command nextCommand = this.parser.parse(command, this.tasks.length());
-            nextCommand.execute(this.tasks, this.ui, this.database);
+            nextCommand.execute(this.tasks, this.ui, this.database, this.undoList, true);
             this.isActive = nextCommand.isActive();
         } catch (DukeException e) {
             ui.response(e.getLocalizedMessage());

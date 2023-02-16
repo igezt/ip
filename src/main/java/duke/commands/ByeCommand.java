@@ -4,6 +4,7 @@ import duke.database.Database;
 import duke.exception.databaseexceptions.DatabaseNotUpdatingException;
 import duke.tasklist.TaskList;
 import duke.ui.Ui;
+import duke.undolist.UndoList;
 
 /** Represents a command for shutting down Duke. */
 public class ByeCommand extends Command {
@@ -22,10 +23,13 @@ public class ByeCommand extends Command {
      * @param taskList taskList of Duke.
      * @param ui user interface object of Duke.
      * @param database database of Duke.
+     * @param undoList list of inverse commands that can be run to undo an action.
+     * @param hasUndo if true, will generate an inverse command to undo that specific command if an inverse command
+     *                exists.
      * @throws DatabaseNotUpdatingException thrown when the database was not updated due to some file update error.
      */
     @Override
-    public void execute(TaskList taskList, Ui ui, Database database) throws DatabaseNotUpdatingException {
+    public void execute(TaskList taskList, Ui ui, Database database, UndoList undoList, boolean hasUndo) throws DatabaseNotUpdatingException {
         this.setIsActive(false);
         database.update(taskList.getTasks());
         assert !this.isActive();
